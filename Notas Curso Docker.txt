@@ -1,0 +1,170 @@
+CONCEPTOS
+Una imagen es como una clase 'template'
+Un contenedor sería una instancia de la clase...
+
+Docker Hub es un registro de imágenes docker
+
+--
+docker <command> <arguments>
+	-pull
+	-run
+
+
+
+Ejemplos:
+
+docker run -it <name> Para ejecutar y mantener el contenedor
+docker run -dit <name> Para ejecutar y mantener el contenedor en segundo plano
+
+-Para ejecutar un comando dentro de un contenedor en ejecución:
+	EJ:
+	-docker exec <id-container> ls
+
+
+-Para ejecutar un comando dentro de un contenedor en ejecución y mantenerse dentro:
+	EJ:
+	-docker exec -it <id-container> bash
+		**Ejecuta el comando y te mantiene dentro.
+
+
+
+
+--
+VOLÚMENES EN DOCKER 
+~Esta es una forma de compartir datos entre contenedores, oseáse, una forma de
+persistir datos.
+
+Con tal de crear un enlace entre el contenedor docker y la máquina anfitrion,
+ejecutar por EJ:
+	docker run -dit -v "$PWD":/home/app ubuntu:16.04
+	*el parámetro -v es para crear el enlace
+	**indicamos el directorio 'anfitrion' y el 'invitado' con $PWD (directorio
+	actual...
+
+
+Crear enlace entre contenedores:
+	EJ:
+	*Creando el volumen:
+	docker run -dit -v /data --name contenedor1 ubuntu:16.04
+		*Dónde /data es el volumen a crear, +info en 'docker run --help'
+
+	*Ejecutando el volumen:
+	docker run -dit --name contenedor2 --volumes-from contenedor1 ubuntu:16.04
+
+
+
+
+Exponiendo puertos en docker: 
+(exponemos nuestros contenedores al exterior a través de los puertos)
+	EJ:
+	*docker run -p 8080:5000 fernando/holamundo
+	** '-p 8080:5000' significa:
+		-8080 el puerto que quiero habilitar en la máquina HOST
+		-5000 el puerto original ejecutándose en el contenedor
+
+	Esto nos permite utilizar las aplicaciones que se ejecutan dentro del
+	contenedor, fuera del mismo...
+
+
+
+CREANDO NUESTRA PRIMERA IMAGEN
+
+	Ejemplo de archivo 'Dockerfile':
+	____
+	FROM ubuntu:18.04
+	RUN apt-get update && apt-get install -y git
+	WORKDIR /app
+	COPY daos.txt /app
+	CMD ["echo", "Hola"]
+	____
+	
+	*docker build -t ubuntugit .
+	**El parámetro -t sirve para asignar un nombre, el punto sería la ruta 
+	(path),	en el ejemplo se utiliza el . como ubicación raiz.
+
+--------------------
+EJEMPLO DE UN DOCKERFILE PARA FLASK
+	EJ:
+
+
+	FROM python:3.6-slim #base
+
+	RUN pip install Flask
+
+	WORKDIR /app
+
+	COPY app.py /app #el primer parámetro es de la máquina host
+
+	EXPOSE 5000 #Exponer el puerto 5000
+
+	CMD ["python", "app.py"]
+
+		*El archivo app.py es un simple contador de visitas a modo
+		de prueba...
+		
+		**Usa -p 5000:5000 para exponer el puerto en la máquina host...
+
+
+--
+Subir imagen a Docker Hub
+
+Hacer login en la terminal
+	*docker login -u=yurimm4
+
+
+Renombrar el nombre (tag) de la imagen
+
+	*docker tag flaskhola:latest yurimm4/flaskhola:1.0
+
+		**flaskhola:latest en este caso sería el nombre del contenedor
+		que queremos subir, el segundo parámetro, el nombre con el cuál se
+		va a guardar en el repositorio Docker.
+	
+
+--
+REDES EN DOCKER
+Nos sirve para crear interacción entre contenedores, llevar nuestros servicios
+a internet y exponer nuestros servicios entre redes de contenedores...
+
+
+	*docker inspect container1
+		**Contenedor activo
+
+
+Hay 3 tipos de redes (driver); bridge, host y null
+
+	*docker network ls
+		**para ver las redes disponibles
+
+
+bridge - Es la red a dónde se añaden de forma predeterminada los contenedores
+creados...
+
+host - Lo que hace es utilizar la misma ip de mi servidor o de mi host...
+
+null - Se utiliza para indicar que un contenedor no tiene asignada una red...
+Osea, que no tendrá conexión a internet...
+
+
+
+Para crear una nueva red:
+	*docker network create <nueva_red>
+		**Por defecto se asignará a bridge como driver...
+
+
+Para asignar un nuevo contenedor a una red existente (antes creada)
+
+	*docker run -dit --name ubuntu_red_tutorial --net=tutorial ubuntu:16.04
+		**usando la bandera --net=<nombre_de_la_red>
+
+--
+DOCKER COMPOSE
+
+
+
+
+
+
+
+
+
